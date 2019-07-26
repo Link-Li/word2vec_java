@@ -13,8 +13,8 @@ public class Word2VecTest {
     public static void main(String[] args) throws IOException {
         Word2vec vec = new Word2vec();
 //        vec.loadJavaModel("model.bin");
-        vec.loadJavaModel("Cbow_model.bin");
-//        vec.loadJavaModel("model.bin");
+//        vec.loadJavaModel("Cbow_model.bin");
+        vec.loadJavaModel("SkipGram_model.bin");
         // 距离最近的词
         System.out.println("\n===距离最近的词===");
         System.out.println(vec.distance("邓小平"));
