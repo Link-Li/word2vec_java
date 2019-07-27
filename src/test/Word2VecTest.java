@@ -14,7 +14,10 @@ public class Word2VecTest {
         Word2vec vec = new Word2vec();
 //        vec.loadJavaModel("model.bin");
 //        vec.loadJavaModel("Cbow_model.bin");
-        vec.loadJavaModel("SkipGram_model.bin");
+//        vec.loadJavaModel("SkipGram_model.bin");
+//        vec.loadJavaModel("2019-07-27-17-56-34Cbow_model.bin");
+        vec.loadJavaModel("2019-07-27-17-59-36SkipGram_model.bin");
+
         // 距离最近的词
         System.out.println("\n===距离最近的词===");
         System.out.println(vec.distance("邓小平"));

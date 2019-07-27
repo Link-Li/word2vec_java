@@ -44,6 +44,7 @@ public class Learn {
 
     private int trainWordsCount = 0;
 
+//    这个应该是使用sigmoid函数的范围，在x取【-6,6】的范围内，sigmoid的反向传播才会有点意义，不然反向传播都是0了
     private int MAX_EXP = 6;
 
     public Learn(Boolean isCbow, Integer layerSize, Integer window, Double alpha, Double sample) {
@@ -226,16 +227,20 @@ public class Learn {
             // Propagate hidden -> output
             for (c = 0; c < layerSize; c++)
                 f += neu1[c] * out.syn1[c];
+//            超出设置的sigmoid范围的数据都舍弃掉
             if (f <= -MAX_EXP)
                 continue;
             else if (f >= MAX_EXP)
                 continue;
-            else
+            else{
+//                double ppppp = ((f + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2));
                 f = expTable[(int) ((f + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))];
+            }
+
             // 'g' is the gradient multiplied by the learning rate
-            // double g = (1 - word.codeArr[d] - f) * alpha;
+             double g = (1 - word.codeArr[d] - f) * alpha;
             // double g = f*(1-f)*( word.codeArr[i] - f) * alpha;
-            double g = f * (1 - f) * (word.codeArr[d] - f) * alpha;
+//            double g = f * (1 - f) * (word.codeArr[d] - f) * alpha;
             //
             for (c = 0; c < layerSize; c++) {
                 neu1e[c] += g * out.syn1[c];
@@ -325,13 +330,18 @@ public class Learn {
         }
     }
 
+
     /**
-     * Precompute the exp() table f(x) = x / (x + 1)
+     * 在训练过程中需要用到大量的sigmoid值计算，如果每次都临时去算exp(x)的值，将会影响性能；
+     * 当对精度的要求不是很严格的时候，我们可以采用近似的运算。
+     * 在word2vec中，将区间[-MAX_EXP, MAX_EXP](代码中MAX_EXP默认值为6)等距划分为EXP_TABLE_SIZE等份，
+     * 并将每个区间的sigmoid值计算好存入到expTable中。在需要使用时，只需要确定所属的区间，属于哪一份，然后直接去数组中查找。
+     * expTable初始化代码如下:
      */
     private void createExpTable() {
         for (int i = 0; i < EXP_TABLE_SIZE; i++) {
-            expTable[i] = Math.exp(((i / (double) EXP_TABLE_SIZE * 2 - 1) * MAX_EXP));
-            expTable[i] = expTable[i] / (expTable[i] + 1);
+            expTable[i] = Math.exp((((i / (double) EXP_TABLE_SIZE) * 2 - 1) * MAX_EXP));
+            expTable[i] = expTable[i] / (expTable[i] + 1); // 把原来的sigmoid的函数进行了一下变化，把符号提取出来之后的形式
         }
     }
 
