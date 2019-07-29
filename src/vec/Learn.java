@@ -81,11 +81,13 @@ public class Learn {
             int lastWordCount = 0;
             int wordCountActual = 0;
             while ((temp = br.readLine()) != null) {
+//                主要进行训练过程中的信息打印和学习率的衰减
                 if (wordCount - lastWordCount > 10000) {
                     System.out.println("alpha:" + alpha + "\tProgress: "
                             + (int) (wordCountActual / (double) (trainWordsCount + 1) * 100) + "%");
                     wordCountActual += wordCount - lastWordCount;
                     lastWordCount = wordCount;
+//                    学习率衰减
                     alpha = startingAlpha * (1 - wordCountActual / (double) (trainWordsCount + 1));
                     if (alpha < startingAlpha * 0.0001) {
                         alpha = startingAlpha * 0.0001;
@@ -206,6 +208,8 @@ public class Learn {
         double[] neu1 = new double[layerSize];// 误差项
         WordNeuron last_word;
 
+
+//      将所有的词向量加起来构成输入，也就是投影层
         for (a = b; a < window * 2 + 1 - b; a++)
             if (a != window) {
                 c = index - window + a;
@@ -216,16 +220,19 @@ public class Learn {
                 last_word = sentence.get(c);
                 if (last_word == null)
                     continue;
+//                每个词向量一共200个特征，所以投影之后的nuel就是200个特征
                 for (c = 0; c < layerSize; c++)
                     neu1[c] += last_word.syn0[c];
             }
 
         // HIERARCHICAL SOFTMAX
+//        进行层次softmax，也就是相当于前向传播和反向传播
         for (int d = 0; d < neurons.size(); d++) {
             HiddenNeuron out = (HiddenNeuron) neurons.get(d);
             double f = 0;
             // Propagate hidden -> output
             for (c = 0; c < layerSize; c++)
+//                进行前向传播
                 f += neu1[c] * out.syn1[c];
 //            超出设置的sigmoid范围的数据都舍弃掉
             if (f <= -MAX_EXP)
@@ -238,18 +245,21 @@ public class Learn {
             }
 
             // 'g' is the gradient multiplied by the learning rate
+//            计算梯度，进行反向传播
              double g = (1 - word.codeArr[d] - f) * alpha;
             // double g = f*(1-f)*( word.codeArr[i] - f) * alpha;
-//            double g = f * (1 - f) * (word.codeArr[d] - f) * alpha;
+//            double g = f * (1 - f) * (word.codeArr[d] - f) * alpha;   // 这里不知道是啥意思，不知道为啥要用这个代码计算梯度
             //
             for (c = 0; c < layerSize; c++) {
                 neu1e[c] += g * out.syn1[c];
             }
             // Learn weights hidden -> output
+//            对哈夫曼树中的父节点的数据进行梯度更新
             for (c = 0; c < layerSize; c++) {
                 out.syn1[c] += g * neu1[c];
             }
         }
+//        对每个单词的词向量进行更新
         for (a = b; a < window * 2 + 1 - b; a++) {
             if (a != window) {
                 c = index - window + a;
